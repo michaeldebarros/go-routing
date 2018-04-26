@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -28,11 +27,10 @@ func IndexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 func NewSoup(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	//Parse body
 	r.ParseForm()
-	fmt.Println(r.Form)
-	addNewSoup(r.Form["name"], r.Form["origin"], r.Form["ingredients"], r.Form["spicy"])
+	//call function that adds soup to db
+	addNewSoup(r.PostForm["name"], r.PostForm["origin"], r.PostForm["ingredients"], r.PostForm["spicy"])
 
 	tmpl.Execute(w, "Your new soup was inserted")
-
 }
 
 //StaticHandler exported function
