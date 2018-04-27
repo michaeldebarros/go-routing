@@ -2,22 +2,9 @@ package main
 
 import (
 	"strings"
-
-	mgo "gopkg.in/mgo.v2"
 )
 
-var mgoSession *mgo.Session
-
-func init() {
-	session, err := mgo.Dial("localhost")
-	if err != nil {
-		panic(err)
-	}
-	//	defer session.Close()  // take a closer look at this
-	mgoSession = session
-}
-
-func addNewSoup(name []string, origin []string, ingredients []string, spicy []string) {
+func addNewSoup(name []string, origin []string, ingredients []string, spicy []string, success chan bool) {
 	session := mgoSession.Copy()
 	defer session.Close()
 	c := session.DB("RECEPIES").C("soups")
@@ -32,10 +19,11 @@ func addNewSoup(name []string, origin []string, ingredients []string, spicy []st
 
 	//parse spicy
 	var spiceFactor bool
-	if spicy[0] == "true" {
-		spiceFactor = true
-	} else {
+
+	if len(spicy) == 0 {
 		spiceFactor = false
+	} else {
+		spiceFactor = true
 	}
 
 	//create instance in Soup struct
@@ -49,4 +37,5 @@ func addNewSoup(name []string, origin []string, ingredients []string, spicy []st
 	if err := c.Insert(s); err != nil {
 		panic(err)
 	}
+	success <- true
 }
