@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href="/static/index.css" rel="stylesheet">
-    <title>Golang Router</title>
+    <title>The Soup Site</title>
 </head>
 
 <body>
-    <h1>{{.}}</h1>
+    <h1>The Soup Site</h1>
     <br>
     <br>
     <br>
@@ -30,8 +30,22 @@
         <br>
         <input type="submit" value="submit"> Submit
         <br>
-
     </form>
+
+    <br>
+    <br>
+    <div>
+        <h3>List of Soups</h3>
+        {{range .}}
+        <div class="soup">
+            <p>Name: {{.Name}}</p>
+            <p>Origin: {{.Origin}}</p>
+            <p>Ingredients: {{.Ingredients}}</p>
+            <p>Is it spicy: {{.Spicy}}</p>
+            <button>Delete</button>
+        </div>
+        {{end}}
+    </div>
 </body>
 
 </html>
