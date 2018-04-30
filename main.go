@@ -22,14 +22,14 @@ func main() {
 	defer mgoSession.Close() // take a closer look at this
 
 	router := httprouter.New()
-	router.GET("/", IndexHandler)
-	router.POST("/newsoup", NewSoup)
-	router.GET("/static/:fileName", StaticHandler)
+	router.GET("/", indexHandler)
+	router.POST("/newsoup", newSoupHandler)
+	router.POST("/delete", deleteSoupHandler)
+	router.GET("/static/:fileName", staticHandler)
 	log.Fatal(http.ListenAndServe(":8082", router))
 }
 
-//IndexHandler exported function
-func IndexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	results, err := getAllSoups()
 	if err != nil {
 		panic(err)
@@ -37,8 +37,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	tmpl.Execute(w, results)
 }
 
-//NewSoup Handler exported function
-func NewSoup(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func newSoupHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	//Parse body
 	r.ParseForm()
 
@@ -53,15 +52,30 @@ func NewSoup(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	//write to template
 	if success == true {
-		tmpl.Execute(w, "Your new soup was inserted")
+		http.Redirect(w, r, "/", 200)
+		//tmpl.Execute(w, "Your new soup was inserted")
 	} else {
 		tmpl.Execute(w, "There was a problem in inserting your soup")
 	}
 
 }
 
-//StaticHandler exported function
-func StaticHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func deleteSoupHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	r.ParseForm()
+	successChan := make(chan bool)
+	go deleteSoup(r.PostForm["button"], successChan)
+
+	success := <-successChan
+
+	if success == true {
+		http.Redirect(w, r, "/", 200)
+	} else {
+		w.Write([]byte("There was a problem deleting your soup"))
+	}
+
+}
+
+func staticHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	staticFilePath := "./static/" + ps.ByName("fileName")
 	http.ServeFile(w, r, staticFilePath)
 }

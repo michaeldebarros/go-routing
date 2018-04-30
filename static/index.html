@@ -42,7 +42,9 @@
             <p>Origin: {{.Origin}}</p>
             <p>Ingredients: {{.Ingredients}}</p>
             <p>Is it spicy: {{.Spicy}}</p>
-            <button>Delete</button>
+            <form action="/delete" method="POST">
+                <button name="button" value="{{.ID}}">DELETE</button>
+            </form>
         </div>
         {{end}}
     </div>
