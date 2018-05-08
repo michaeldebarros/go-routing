@@ -1,11 +1,13 @@
-package main
+package controller
 
 import (
+	"router/model"
 	"strings"
 )
 
-func addNewSoup(name []string, origin []string, ingredients []string, spicy []string, success chan bool) {
-	session := mgoSession.Copy()
+//AddNewSoup exported
+func AddNewSoup(name []string, origin []string, ingredients []string, spicy []string, success chan bool) {
+	session := MgoSession.Copy()
 	defer session.Close()
 	c := session.DB("RECEPIES").C("soups")
 
@@ -27,7 +29,7 @@ func addNewSoup(name []string, origin []string, ingredients []string, spicy []st
 	}
 
 	//create instance in Soup struct
-	s := Soup{
+	s := model.Soup{
 		Name:        name[0],
 		Origin:      origin[0],
 		Spicy:       spiceFactor,

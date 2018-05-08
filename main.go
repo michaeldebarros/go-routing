@@ -4,25 +4,22 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"router/controller"
 
 	"github.com/julienschmidt/httprouter"
-	"gopkg.in/mgo.v2"
 )
 
-var tmpl = template.Must(template.ParseFiles("./static/index.html"))
+var indexTmpl = template.Must(template.ParseFiles("./static/index.html"))
+var loginTmpl = template.Must(template.ParseFiles("./static/login.html"))
 
-var mgoSession *mgo.Session
+//var mgoSession *mgo.Session
 
 func main() {
-	session, err := mgo.Dial("localhost")
-	if err != nil {
-		panic(err)
-	}
-	mgoSession = session
-	defer mgoSession.Close() // take a closer look at this
-
+	defer controller.MgoSession.Close()
 	router := httprouter.New()
 	router.GET("/", indexHandler)
+	router.GET("/login", loginGetHandler)
+	//	router.POST("/login", loginPostHandler)
 	router.POST("/newsoup", newSoupHandler)
 	router.POST("/delete", deleteSoupHandler)
 	router.GET("/static/:fileName", staticHandler)
@@ -30,14 +27,24 @@ func main() {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	results, err := getAllSoups()
+	results, err := controller.GetAllSoups()
 	if err != nil {
 		panic(err)
 	}
-	tmpl.Execute(w, results)
+	indexTmpl.Execute(w, results)
 }
 
-func newSoupHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func loginGetHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	loginTmpl.Execute(w, "") //take away the empty string
+}
+
+//func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+//	r.PostForm()
+//	userLogin(r.PostForm["login"], r.PostForm["password"])
+//	indexTmpl.Execute(w, results)
+//}
+
+func newSoupHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	//Parse body
 	r.ParseForm()
 
@@ -45,17 +52,16 @@ func newSoupHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	successChan := make(chan bool)
 
 	//call function that adds soup to db
-	go addNewSoup(r.PostForm["name"], r.PostForm["origin"], r.PostForm["ingredients"], r.PostForm["spicy"], successChan)
+	go controller.AddNewSoup(r.PostForm["name"], r.PostForm["origin"], r.PostForm["ingredients"], r.PostForm["spicy"], successChan)
 
 	//receive success bool message
 	success := <-successChan
 
 	//write to template
 	if success == true {
-		http.Redirect(w, r, "/", 200)
-		//tmpl.Execute(w, "Your new soup was inserted")
+		http.Redirect(w, r, "/", 302) //fix this redirect
 	} else {
-		tmpl.Execute(w, "There was a problem in inserting your soup")
+		indexTmpl.Execute(w, "There was a problem in inserting your soup") //change this
 	}
 
 }
@@ -63,14 +69,14 @@ func newSoupHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 func deleteSoupHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	r.ParseForm()
 	successChan := make(chan bool)
-	go deleteSoup(r.PostForm["button"], successChan)
+	go controller.DeleteSoup(r.PostForm["button"], successChan)
 
 	success := <-successChan
 
 	if success == true {
-		http.Redirect(w, r, "/", 200)
+		http.Redirect(w, r, "/", 302)
 	} else {
-		w.Write([]byte("There was a problem deleting your soup"))
+		http.Redirect(w, r, "/", 304)
 	}
 
 }

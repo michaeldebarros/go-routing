@@ -43,7 +43,7 @@
             <p>Ingredients: {{.Ingredients}}</p>
             <p>Is it spicy: {{.Spicy}}</p>
             <form action="/delete" method="POST">
-                <button name="button" value="{{.ID}}">DELETE</button>
+                <button name="button" value="{{.ID.Hex}}">DELETE</button>
             </form>
         </div>
         {{end}}
