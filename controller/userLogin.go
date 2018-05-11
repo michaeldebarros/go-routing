@@ -10,7 +10,7 @@ import (
 )
 
 //UserLogin export
-func UserLogin(login []string, password []string) {
+func UserLogin(login []string, password []string, message chan string) {
 	session := MgoSession.Copy()
 	defer session.Close()
 	c := session.DB("RECEPIES").C("users")
@@ -18,13 +18,12 @@ func UserLogin(login []string, password []string) {
 	userByLogin := model.User{}
 
 	c.Find(bson.M{"login": login[0]}).One(&userByLogin)
-	fmt.Println(len(userByLogin.ID))
 
 	if len(userByLogin.ID) == 0 {
 		//create new user
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password[0]), 4)
 		if err != nil {
-			fmt.Println("Error while hashing password")
+			fmt.Println(err)
 		}
 		//insert new user in db
 		userToBeInserted := model.User{
@@ -32,7 +31,15 @@ func UserLogin(login []string, password []string) {
 			Password: hashedPassword,
 		}
 		if err := c.Insert(userToBeInserted); err != nil {
-			fmt.Println("problem inserting user")
+			fmt.Println(err)
 		}
+		message <- "New user created"
+	} else {
+		//if there already is a user in the db make login
+		err := bcrypt.CompareHashAndPassword(userByLogin.Password, []byte(password[0]))
+		if err != nil {
+			fmt.Println(err)
+		}
+		message <- "User logged in successfully"
 	}
 }

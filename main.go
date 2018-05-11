@@ -41,8 +41,11 @@ func loginGetHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 
 func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	r.ParseForm()
-	controller.UserLogin(r.PostForm["login"], r.PostForm["password"])
-	loginTmpl.Execute(w, "Logged In")
+	message := make(chan string)
+	go controller.UserLogin(r.PostForm["login"], r.PostForm["password"], message)
+
+	messageToPrint := <-message
+	loginTmpl.Execute(w, messageToPrint)
 }
 
 func newSoupHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
