@@ -19,6 +19,7 @@ func UserLogin(login []string, password []string, message chan string) {
 
 	c.Find(bson.M{"login": login[0]}).One(&userByLogin)
 
+	//if there is no user in the db with that login
 	if len(userByLogin.ID) == 0 {
 		//create new user
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password[0]), 4)
