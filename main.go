@@ -17,9 +17,10 @@ var loginTmpl = template.Must(template.ParseFiles("./static/login.html"))
 func main() {
 	defer controller.MgoSession.Close()
 	router := httprouter.New()
+	router.HandleMethodNotAllowed = false //prevent router from sending 405 to request to same rout
 	router.GET("/", indexHandler)
 	router.GET("/login", loginGetHandler)
-	//	router.POST("/login", loginPostHandler)
+	router.POST("/login", loginPostHandler)
 	router.POST("/newsoup", newSoupHandler)
 	router.POST("/delete", deleteSoupHandler)
 	router.GET("/static/:fileName", staticHandler)
@@ -38,11 +39,14 @@ func loginGetHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	loginTmpl.Execute(w, "") //take away the empty string
 }
 
-//func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-//	r.PostForm()
-//	userLogin(r.PostForm["login"], r.PostForm["password"])
-//	indexTmpl.Execute(w, results)
-//}
+func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	r.ParseForm()
+	message := make(chan string)
+	go controller.UserLogin(r.PostForm["login"], r.PostForm["password"], message)
+
+	messageToPrint := <-message
+	loginTmpl.Execute(w, messageToPrint)
+}
 
 func newSoupHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	//Parse body
