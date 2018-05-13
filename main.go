@@ -42,10 +42,18 @@ func loginGetHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	r.ParseForm()
 	message := make(chan string)
-	go controller.UserLogin(r.PostForm["login"], r.PostForm["password"], message)
+	cookiePointer := make(chan *http.Cookie)
+	go controller.UserLogin(r.PostForm["login"], r.PostForm["password"], message, cookiePointer)
 
+	//receive cookie from channel and put in variable
+	cookieToSet := <-cookiePointer
+	//set the cookie
+	http.SetCookie(w, cookieToSet)
+
+	//receive messsage success message from channel
 	messageToPrint := <-message
 	loginTmpl.Execute(w, messageToPrint)
+
 }
 
 func newSoupHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -82,7 +90,6 @@ func deleteSoupHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	} else {
 		http.Redirect(w, r, "/", 304)
 	}
-
 }
 
 func staticHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
