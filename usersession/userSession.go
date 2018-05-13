@@ -2,7 +2,7 @@ package usersession
 
 import "net/http"
 
-//MakeCookie export
+//MakeCookie export function
 func MakeCookie(userIDHex string) *http.Cookie {
 	newCookie := http.Cookie{
 		Name:   "soup-site-userID",
@@ -11,3 +11,5 @@ func MakeCookie(userIDHex string) *http.Cookie {
 	}
 	return &newCookie
 }
+
+//DELETE COOKIE
