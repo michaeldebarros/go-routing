@@ -2,7 +2,9 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
 	"router/model"
+	"router/usersession"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -10,7 +12,7 @@ import (
 )
 
 //UserLogin export
-func UserLogin(login []string, password []string, message chan string) {
+func UserLogin(login []string, password []string, message chan string, cookiePointers chan *http.Cookie) {
 	session := MgoSession.Copy()
 	defer session.Close()
 	c := session.DB("RECEPIES").C("users")
@@ -30,10 +32,17 @@ func UserLogin(login []string, password []string, message chan string) {
 		userToBeInserted := model.User{
 			Login:    login[0],
 			Password: hashedPassword,
+			ID:       bson.NewObjectId(),
 		}
 		if err := c.Insert(userToBeInserted); err != nil {
 			fmt.Println(err)
 		}
+
+		//get recently created userID from db
+		//call cookieMaker with userID string
+		newCookiePointer := usersession.MakeCookie(userToBeInserted.ID.Hex())
+
+		cookiePointers <- newCookiePointer
 		message <- "New user created"
 	} else {
 		//if there already is a user in the db make login
@@ -41,6 +50,9 @@ func UserLogin(login []string, password []string, message chan string) {
 		if err != nil {
 			fmt.Println(err)
 		}
+
+		newCookiePointer := usersession.MakeCookie(userByLogin.ID.Hex())
+		cookiePointers <- newCookiePointer
 		message <- "User logged in successfully"
 	}
 }
