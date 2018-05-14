@@ -2,13 +2,14 @@ package controller
 
 import (
 	"fmt"
+	"router/db"
 
 	"gopkg.in/mgo.v2/bson"
 )
 
 //DeleteSoup export
 func DeleteSoup(id []string, success chan bool) {
-	session := MgoSession.Copy()
+	session := db.MgoSession.Copy()
 	defer session.Close()
 
 	objID := bson.ObjectIdHex(id[0])

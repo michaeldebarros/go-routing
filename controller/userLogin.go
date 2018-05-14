@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"router/db"
 	"router/model"
 	"router/usersession"
 
@@ -13,7 +14,7 @@ import (
 
 //UserLogin export
 func UserLogin(login []string, password []string, message chan string, cookiePointers chan *http.Cookie) {
-	session := MgoSession.Copy()
+	session := db.MgoSession.Copy()
 	defer session.Close()
 	c := session.DB("RECEPIES").C("users")
 
@@ -40,7 +41,7 @@ func UserLogin(login []string, password []string, message chan string, cookiePoi
 
 		//get recently created userID from db
 		//call cookieMaker with userID string
-		newCookiePointer := usersession.MakeCookie(userToBeInserted.ID.Hex())
+		newCookiePointer := usersession.InitSession(userToBeInserted.ID.Hex())
 
 		cookiePointers <- newCookiePointer
 		message <- "New user created"
@@ -51,7 +52,7 @@ func UserLogin(login []string, password []string, message chan string, cookiePoi
 			fmt.Println(err)
 		}
 
-		newCookiePointer := usersession.MakeCookie(userByLogin.ID.Hex())
+		newCookiePointer := usersession.InitSession(userByLogin.ID.Hex())
 		cookiePointers <- newCookiePointer
 		message <- "User logged in successfully"
 	}

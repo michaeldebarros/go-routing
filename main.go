@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"router/controller"
+	"router/db"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -15,12 +17,13 @@ var loginTmpl = template.Must(template.ParseFiles("./static/login.html"))
 //var mgoSession *mgo.Session
 
 func main() {
-	defer controller.MgoSession.Close()
+	defer db.MgoSession.Close()
 	router := httprouter.New()
 	router.HandleMethodNotAllowed = false //prevent router from sending 405 to request to same rout
 	router.GET("/", indexHandler)
 	router.GET("/login", loginGetHandler)
 	router.POST("/login", loginPostHandler)
+	router.GET("/logout", logOutHandler)
 	router.POST("/newsoup", newSoupHandler)
 	router.POST("/delete", deleteSoupHandler)
 	router.GET("/static/:fileName", staticHandler)
@@ -54,6 +57,20 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	messageToPrint := <-message
 	loginTmpl.Execute(w, messageToPrint)
 
+}
+
+func logOutHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	cookieToBeDeleted, err := r.Cookie("soup-site-userID")
+	if err != nil {
+		fmt.Println(err)
+	}
+	newCookie := http.Cookie{
+		Name:   "soup-site-userID",
+		Value:  cookieToBeDeleted.Value,
+		MaxAge: -1,
+	}
+	http.SetCookie(w, &newCookie)
+	loginTmpl.Execute(w, "User Logged Out")
 }
 
 func newSoupHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
