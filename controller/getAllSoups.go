@@ -1,10 +1,13 @@
 package controller
 
-import "router/model"
+import (
+	"router/db"
+	"router/model"
+)
 
 //GetAllSoups export
 func GetAllSoups() ([]model.Soup, error) {
-	session := MgoSession.Copy()
+	session := db.MgoSession.Copy()
 	defer session.Close()
 	c := session.DB("RECEPIES").C("soups")
 

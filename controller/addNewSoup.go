@@ -1,13 +1,14 @@
 package controller
 
 import (
+	"router/db"
 	"router/model"
 	"strings"
 )
 
 //AddNewSoup exported
 func AddNewSoup(name []string, origin []string, ingredients []string, spicy []string, success chan bool) {
-	session := MgoSession.Copy()
+	session := db.MgoSession.Copy()
 	defer session.Close()
 	c := session.DB("RECEPIES").C("soups")
 

@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"router/controller"
+	"router/db"
+	"router/usersession"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -15,12 +18,13 @@ var loginTmpl = template.Must(template.ParseFiles("./static/login.html"))
 //var mgoSession *mgo.Session
 
 func main() {
-	defer controller.MgoSession.Close()
+	defer db.MgoSession.Close()
 	router := httprouter.New()
 	router.HandleMethodNotAllowed = false //prevent router from sending 405 to request to same rout
 	router.GET("/", indexHandler)
 	router.GET("/login", loginGetHandler)
 	router.POST("/login", loginPostHandler)
+	router.GET("/logout", logOutHandler)
 	router.POST("/newsoup", newSoupHandler)
 	router.POST("/delete", deleteSoupHandler)
 	router.GET("/static/:fileName", staticHandler)
@@ -52,8 +56,42 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 
 	//receive messsage success message from channel
 	messageToPrint := <-message
+
 	loginTmpl.Execute(w, messageToPrint)
 
+}
+
+func logOutHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	cookieToBeDeleted, err := r.Cookie("session")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	//delete session from SessionMAP and database
+	success := make(chan bool)
+
+	go usersession.DeleteSession(cookieToBeDeleted.Value, success)
+
+	//wait for OK
+
+	ok := <-success
+
+	var message string
+
+	if ok == true {
+		//send new empty cookie
+		newCookie := http.Cookie{
+			Name:   "session",
+			Value:  cookieToBeDeleted.Value,
+			MaxAge: -1,
+		}
+		http.SetCookie(w, &newCookie)
+		message = "User Logged Out"
+	} else if ok == false {
+		message = "Problem Logging Out. Try Again."
+	}
+
+	loginTmpl.Execute(w, message)
 }
 
 func newSoupHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
