@@ -30,6 +30,7 @@ func InitSession(userIDHex string) *http.Cookie {
 		ID:     bson.NewObjectId(),
 		UserID: userIDHex,
 	}
+
 	if err := c.Insert(s); err != nil {
 		fmt.Println(err)
 	}
@@ -39,8 +40,7 @@ func InitSession(userIDHex string) *http.Cookie {
 	//write session to SessionMAP
 	SessionMAP[sessionIDHex] = userIDHex
 
-	//just check if session was written to SessionMAP
-	fmt.Println(SessionMAP[sessionIDHex])
+	fmt.Println(SessionMAP)
 
 	//create cookie and return it
 	newCookie := http.Cookie{
@@ -53,7 +53,7 @@ func InitSession(userIDHex string) *http.Cookie {
 }
 
 //DeleteSession export
-func DeleteSession(sessionIDString string) {
+func DeleteSession(sessionIDString string, success chan bool) {
 	//creat a session and insert in db
 	session := db.MgoSession.Copy()
 	defer session.Close()
@@ -62,5 +62,12 @@ func DeleteSession(sessionIDString string) {
 	if err := c.RemoveId(bson.ObjectIdHex(sessionIDString)); err != nil {
 		fmt.Println(err)
 	}
+
+	//delete from SessionMAP
+	delete(SessionMAP, sessionIDString)
+
+	fmt.Println(SessionMAP)
+
+	success <- true
 
 }

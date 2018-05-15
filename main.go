@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"router/controller"
 	"router/db"
+	"router/usersession"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -55,22 +56,42 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 
 	//receive messsage success message from channel
 	messageToPrint := <-message
+
 	loginTmpl.Execute(w, messageToPrint)
 
 }
 
 func logOutHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	cookieToBeDeleted, err := r.Cookie("soup-site-userID")
+	cookieToBeDeleted, err := r.Cookie("session")
 	if err != nil {
 		fmt.Println(err)
 	}
-	newCookie := http.Cookie{
-		Name:   "soup-site-userID",
-		Value:  cookieToBeDeleted.Value,
-		MaxAge: -1,
+
+	//delete session from SessionMAP and database
+	success := make(chan bool)
+
+	go usersession.DeleteSession(cookieToBeDeleted.Value, success)
+
+	//wait for OK
+
+	ok := <-success
+
+	var message string
+
+	if ok == true {
+		//send new empty cookie
+		newCookie := http.Cookie{
+			Name:   "session",
+			Value:  cookieToBeDeleted.Value,
+			MaxAge: -1,
+		}
+		http.SetCookie(w, &newCookie)
+		message = "User Logged Out"
+	} else if ok == false {
+		message = "Problem Logging Out. Try Again."
 	}
-	http.SetCookie(w, &newCookie)
-	loginTmpl.Execute(w, "User Logged Out")
+
+	loginTmpl.Execute(w, message)
 }
 
 func newSoupHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
