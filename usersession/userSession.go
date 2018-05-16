@@ -40,8 +40,6 @@ func InitSession(userIDHex string) *http.Cookie {
 	//write session to SessionMAP
 	SessionMAP[sessionIDHex] = userIDHex
 
-	fmt.Println(SessionMAP)
-
 	//create cookie and return it
 	newCookie := http.Cookie{
 		Name:   "session",
@@ -65,8 +63,6 @@ func DeleteSession(sessionIDString string, success chan bool) {
 
 	//delete from SessionMAP
 	delete(SessionMAP, sessionIDString)
-
-	fmt.Println(SessionMAP)
 
 	success <- true
 
