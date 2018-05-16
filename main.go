@@ -28,7 +28,7 @@ func main() {
 	router.POST("/newsoup", newSoupHandler)
 	router.POST("/delete", deleteSoupHandler)
 	router.GET("/static/:fileName", staticHandler)
-	log.Fatal(http.ListenAndServe(":8082", router))
+	log.Fatal(http.ListenAndServe(":8082", usersession.LoginWall(router)))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
