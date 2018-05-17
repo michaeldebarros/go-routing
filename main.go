@@ -52,13 +52,15 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	//receive cookie from channel and put in variable
 	cookieToSet := <-cookiePointer
 	//set the cookie
-	http.SetCookie(w, cookieToSet)
+	if cookieToSet != nil {
+		http.SetCookie(w, cookieToSet)
+	}
 
-	//receive messsage success message from channel
+	//receive messsage from channel
 	messageToPrint := <-message
 
+	//execute template
 	loginTmpl.Execute(w, messageToPrint)
-
 }
 
 func logOutHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
