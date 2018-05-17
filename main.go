@@ -28,7 +28,7 @@ func main() {
 	router.POST("/newsoup", newSoupHandler)
 	router.POST("/delete", deleteSoupHandler)
 	router.GET("/static/:fileName", staticHandler)
-	log.Fatal(http.ListenAndServe(":8082", router))
+	log.Fatal(http.ListenAndServe(":8082", usersession.LoginWall(router)))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -52,13 +52,15 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	//receive cookie from channel and put in variable
 	cookieToSet := <-cookiePointer
 	//set the cookie
-	http.SetCookie(w, cookieToSet)
+	if cookieToSet != nil {
+		http.SetCookie(w, cookieToSet)
+	}
 
-	//receive messsage success message from channel
+	//receive messsage from channel
 	messageToPrint := <-message
 
+	//execute template
 	loginTmpl.Execute(w, messageToPrint)
-
 }
 
 func logOutHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

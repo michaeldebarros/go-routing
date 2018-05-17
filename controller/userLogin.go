@@ -49,11 +49,12 @@ func UserLogin(login []string, password []string, message chan string, cookiePoi
 		//if there already is a user in the db make login
 		err := bcrypt.CompareHashAndPassword(userByLogin.Password, []byte(password[0]))
 		if err != nil {
-			fmt.Println(err)
+			cookiePointers <- nil
+			message <- "Unable to login user."
+		} else {
+			newCookiePointer := usersession.InitSession(userByLogin.ID.Hex())
+			cookiePointers <- newCookiePointer
+			message <- "User logged in successfully"
 		}
-
-		newCookiePointer := usersession.InitSession(userByLogin.ID.Hex())
-		cookiePointers <- newCookiePointer
-		message <- "User logged in successfully"
 	}
 }
