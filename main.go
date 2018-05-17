@@ -59,7 +59,6 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	//receive messsage from channel
 	messageToPrint := <-message
 
-	//execute template
 	loginTmpl.Execute(w, messageToPrint)
 }
 
