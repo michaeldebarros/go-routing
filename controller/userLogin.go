@@ -52,6 +52,7 @@ func UserLogin(login []string, password []string, message chan string, cookiePoi
 			cookiePointers <- nil
 			message <- "Unable to login user."
 		} else {
+			usersession.DeleteOldSessions(userByLogin.ID.Hex())
 			newCookiePointer := usersession.InitSession(userByLogin.ID.Hex())
 			cookiePointers <- newCookiePointer
 			message <- "User logged in successfully"
