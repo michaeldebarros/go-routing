@@ -26,6 +26,8 @@ func InitSession(userIDHex string) *http.Cookie {
 	defer session.Close()
 	c := session.DB("RECEPIES").C("sessions")
 
+	//verify if there is a session in the db for that user and delete
+
 	s := model.Session{
 		ID:     bson.NewObjectId(),
 		UserID: userIDHex,
@@ -66,4 +68,17 @@ func DeleteSession(sessionIDString string, success chan bool) {
 
 	success <- true
 
+}
+
+//DeleteOldSessions export
+func DeleteOldSessions(userIDHex string) {
+	session := db.MgoSession.Copy()
+	defer session.Close()
+	c := session.DB("RECEPIES").C("sessions")
+
+	//remove all sessions from certain user from db
+	_, err := c.RemoveAll(bson.M{"userID": userIDHex})
+	if err != nil {
+		fmt.Println(err)
+	}
 }
