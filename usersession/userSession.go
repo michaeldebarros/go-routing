@@ -46,7 +46,7 @@ func InitSession(userIDHex string) *http.Cookie {
 	newCookie := http.Cookie{
 		Name:   "session",
 		Value:  sessionIDHex,
-		MaxAge: 60,
+		MaxAge: 1500,
 	}
 
 	return &newCookie
