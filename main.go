@@ -27,8 +27,9 @@ func main() {
 	router.GET("/logout", logOutHandler)
 	router.POST("/newsoup", newSoupHandler)
 	router.POST("/delete", deleteSoupHandler)
-	router.GET("/static/:fileName", staticHandler)
-	log.Fatal(http.ListenAndServe(":8082", usersession.LoginWall(router)))
+	router.GET("/assets/*filePath", staticHandler)
+	//	log.Fatal(http.ListenAndServe(":8082", usersession.LoginWall(router)))
+	log.Fatal(http.ListenAndServe(":8082", router))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -57,9 +58,13 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	}
 
 	//receive messsage from channel
+	//This message will be used for toast message/notifications
+	//for now just print
 	messageToPrint := <-message
 
-	loginTmpl.Execute(w, messageToPrint)
+	fmt.Println(messageToPrint)
+
+	http.Redirect(w, r, "/", 302) //fix this redirect
 }
 
 func logOutHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -96,6 +101,7 @@ func logOutHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 }
 
 func newSoupHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	fmt.Println(r)
 	//Parse body
 	r.ParseForm()
 
@@ -132,6 +138,6 @@ func deleteSoupHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 }
 
 func staticHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	staticFilePath := "./static/" + ps.ByName("fileName")
+	staticFilePath := "./assets/" + ps.ByName("filePath")
 	http.ServeFile(w, r, staticFilePath)
 }
