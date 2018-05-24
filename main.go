@@ -101,7 +101,6 @@ func logOutHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 }
 
 func newSoupHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	fmt.Println(r)
 	//Parse body
 	r.ParseForm()
 
