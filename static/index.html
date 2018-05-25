@@ -74,9 +74,29 @@
                             <div class="card ">
                                 <div class="card-body ">
                                     <div class="tab-content text-center ">
+                                        {{if eq (len .Ingredients) 1}}
+                                        <p>{{.Name}}is known for the people of {{.Origin}} as a heritage recepie. It`s main
+                                            ingredient is {{index .Ingredients 0}}. And that`s exactly what gives its characteristic
+                                            flavor. The secret is fresh {{index .Ingredients 0}}, cook it in low fire, not
+                                            letting it boil. Serve with bread.{{if .Spicy}} But remember, if you are not
+                                            a fan of spices, this might not be for you. {{end}}</p>
+
+                                        {{else if eq (len .Ingredients) 2}}
+                                        <p>For the brave people of {{.Origin}} there is nothing more native than a great bowl
+                                            of {{.Name}}. Mix {{index .Ingredients 0}} and {{index .Ingredients 1}} in a
+                                            big pan. Let it boil slightly.{{if .Spicy}} This soup is specially enjoyable
+                                            for those that like spiced food.{{end}} Enjoy. </p>
+
+
+                                        {{else if gt (len .Ingredients) 2}}
                                         <p>{{.Name}} is a deliciouse soup from {{.Origin}}. People love to eat this soup in
-                                            the summer or in winter.
-                                        </p>
+                                            the summer or in winter. Take all the ingredients {{range .Ingredients}} {{.}},
+                                            {{end}} water and salt. Put in a pan, add some extra seasoning and make it boil.
+                                            Let it sit for 30 minutes. Serve with home made biscuit. {{if .Spicy}} Just do
+                                            not forget this is a spicy dish.{{end}}</p>
+
+                                        {{end}}
+
                                     </div>
                                     <form action="/delete" method="POST">
                                         <button class="btn btn-primary btn-simple btn-round" name="button" value="{{.ID.Hex}}">DELETE</button>
